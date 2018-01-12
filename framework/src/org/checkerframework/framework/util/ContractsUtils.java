@@ -226,19 +226,23 @@ public class ContractsUtils {
     }
 
     /**
-     * Returns the annotation mirror as specified by the "qualifier" value in {@code qualifierAnno}.
-     * If {@code argumentAnno} is specified, then arguments are copied from {@code argumentAnno} to
-     * the returned annotation, renamed according to {@code argumentMap}.
+     * Returns the annotation mirror as specified by the "qualifier" element in {@code
+     * qualifierAnno}. If {@code argumentAnno} is specified, then arguments are copied from {@code
+     * argumentAnno} to the returned annotation, renamed according to {@code argumentMap}.
+     *
+     * <p>This is a helper method intended to be called from {@link
+     * getAnnotationMirrorOfContractAnnotation} and {@link getAnnotationMirrorOfMetaAnnotation}. Use
+     * one of those methods if possible.
      *
      * @param qualifierAnno annotation specifying the qualifier class
-     * @param argumentAnno annotation containing the argument values
-     * @param argumentMap map of argument names, which maps from names in {@code argumentAnno} to
-     *     names used in the returned annotation
+     * @param argumentAnno annotation containing the argument values, or {@code null}
+     * @param argumentRenaming renaming of argument names, which maps from names in {@code
+     *     argumentAnno} to names used in the returned annotation, or {@code null}
      */
     private AnnotationMirror getAnnotationMirrorOfQualifier(
             AnnotationMirror qualifierAnno,
             AnnotationMirror argumentAnno,
-            Map<String, String> argumentMap) {
+            Map<String, String> argumentRenaming) {
 
         @SuppressWarnings("unchecked")
         Class<? extends Annotation> c =
@@ -246,12 +250,12 @@ public class ContractsUtils {
                         AnnotationUtils.getElementValueClass(qualifierAnno, "qualifier", false);
 
         AnnotationMirror anno;
-        if (argumentAnno == null || argumentMap.isEmpty()) {
+        if (argumentAnno == null || argumentRenaming.isEmpty()) {
             // If there are no arguments, use factory method that allows caching
             anno = AnnotationBuilder.fromClass(factory.getElementUtils(), c);
         } else {
             AnnotationBuilder builder = new AnnotationBuilder(factory.getProcessingEnv(), c);
-            builder.copyRenameElementValuesFromAnnotation(argumentAnno, argumentMap);
+            builder.copyRenameElementValuesFromAnnotation(argumentAnno, argumentRenaming);
             anno = builder.build();
         }
 
@@ -266,23 +270,29 @@ public class ContractsUtils {
             }
         }
     }
+
     /**
-     * Returns the annotation mirror as specified by the "qualifier" value in {@code contractAnno}.
+     * Returns the annotation mirror as specified by the "qualifier" element in {@code
+     * contractAnno}.
      */
     private AnnotationMirror getAnnotationMirrorOfContractAnnotation(
             AnnotationMirror contractAnno) {
         return getAnnotationMirrorOfQualifier(contractAnno, null, null);
     }
+
     /**
-     * Makes a map from source element names to target element names. Each element of {@code
-     * contractAnnoElement} that is annotated by {@link QualifierArgument} is mapped to the name
-     * specified by the value of {@link QualifierArgument}. If the value is not specified or is an
-     * empty string, then the element is mapped to an element of the same name.
+     * Makes a map from element names of a contract annotation to qualifier argument names, as
+     * defined by {@link QualifierArgument}.
      *
-     * @param contractAnnoElement the declaration of the contract annotation containing the source
-     *     elements
+     * <p>Each element of {@code contractAnnoElement} that is annotated by {@link QualifierArgument}
+     * is mapped to the name specified by the value of {@link QualifierArgument}. If the value is
+     * not specified or is an empty string, then the element is mapped to an argument of the same
+     * name.
+     *
+     * @param contractAnnoElement the declaration of the contract annotation containing the elements
      * @return map from the names of elements of {@code sourceArgumentNames} to the corresponding
-     *     target element names
+     *     qualifier argument names
+     * @see QualifierArgument
      */
     private Map<String, String> makeArgumentMap(Element contractAnnoElement) {
         HashMap<String, String> argumentMap = new HashMap<>();
@@ -305,8 +315,8 @@ public class ContractsUtils {
     }
 
     /**
-     * Returns the annotation mirror as specified by the "qualifier" value in {@code metaAnno}, with
-     * arguments taken from {@code argumentAnno}.
+     * Returns the annotation mirror as specified by the "qualifier" element in {@code metaAnno},
+     * with arguments taken from {@code argumentAnno}.
      */
     private AnnotationMirror getAnnotationMirrorOfMetaAnnotation(
             AnnotationMirror metaAnno, AnnotationMirror argumentAnno) {
