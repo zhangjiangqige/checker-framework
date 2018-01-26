@@ -104,10 +104,9 @@ public class AnnotationStatistics extends SourceChecker {
 
         @Override
         public Void visitAnnotation(AnnotationTree tree, Void p) {
+            Name annoName = ((JCAnnotation) tree).annotationType.type.tsym.getQualifiedName();
+            incrementCount(annoName);
             if (annotations) {
-                Name annoName = ((JCAnnotation) tree).annotationType.type.tsym.getQualifiedName();
-                incrementCount(annoName);
-
                 // An annotation is a body annotation if, while ascending the
                 // AST from the annotation to the root, we find a block
                 // immediately enclosed by a method.
