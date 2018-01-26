@@ -71,6 +71,7 @@ public class AnnotationStatistics extends SourceChecker {
                 System.out.println(entry.getKey() + "\t" + entry.getValue());
             }
         }
+        System.out.flush();
     }
 
     /** Increment the number of times annotation with name {@code annoName} has appeared. */
