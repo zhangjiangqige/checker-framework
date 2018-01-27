@@ -62,16 +62,23 @@ public class AnnotationStatistics extends SourceChecker {
     final Map<Name, Integer> annotationCount = new HashMap<Name, Integer>();
 
     @Override
-    public void typeProcessingOver() {
+    protected boolean shouldAddShutdownHook() {
+        return true;
+    }
+
+    @Override
+    protected void shutdownHook() {
+        super.shutdownHook();
         if (annotationCount.isEmpty()) {
-            System.out.println("No annotations found.");
+            System.out.printf("No annotations found.%n");
         } else {
-            System.out.println("Found annotations: ");
+            StringBuilder builder = new StringBuilder();
+            builder.append(String.format("Found annotations: %n"));
             for (Map.Entry<Name, Integer> entry : annotationCount.entrySet()) {
-                System.out.println(entry.getKey() + "\t" + entry.getValue());
+                builder.append(String.format("%s: %d%n", entry.getKey(), entry.getValue()));
             }
+            System.out.print(builder.toString());
         }
-        System.out.flush();
     }
 
     /** Increment the number of times annotation with name {@code annoName} has appeared. */

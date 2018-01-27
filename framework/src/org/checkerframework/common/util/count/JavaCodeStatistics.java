@@ -48,13 +48,22 @@ public class JavaCodeStatistics extends SourceChecker {
     int numberOfIndexWarningSuppressions = 0;
 
     @Override
-    public void typeProcessingOver() {
-        System.out.printf("Found %d generic type uses.\n", generics);
-        System.out.printf("Found %d array accesses and creations.\n", arrayAccesses);
-        System.out.printf("Found %d typecasts.\n", typecasts);
-        System.out.printf(
-                "Found %d warning suppression annotations for the Index Checker.\n",
-                numberOfIndexWarningSuppressions);
+    protected boolean shouldAddShutdownHook() {
+        return true;
+    }
+
+    @Override
+    protected void shutdownHook() {
+        super.shutdownHook();
+        StringBuilder builder = new StringBuilder();
+        builder.append(String.format("Found %d generic type uses.\n", generics));
+        builder.append(String.format("Found %d array accesses and creations.\n", arrayAccesses));
+        builder.append(String.format("Found %d typecasts.\n", typecasts));
+        builder.append(
+                String.format(
+                        "Found %d warning suppression annotations for the Index Checker.\n",
+                        numberOfIndexWarningSuppressions));
+        System.out.print(builder.toString());
     }
 
     @Override
