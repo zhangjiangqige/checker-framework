@@ -59,7 +59,63 @@ import org.checkerframework.javacutil.AnnotationProvider;
 @SupportedSourceVersion(SourceVersion.RELEASE_8)
 public class AnnotationStatistics extends SourceChecker {
 
-    final Map<Name, Integer> annotationCount = new HashMap<Name, Integer>();
+    /** Index Checker annotations */
+    String[] annotations = {
+        "EnsuresLTLengthOf",
+        "EnsuresLTLengthOfIf",
+        "GTENegativeOne",
+        "IndexFor",
+        "IndexOrHigh",
+        "IndexOrLow",
+        "LTEqLengthOf",
+        "LTLengthOf",
+        "LTOMLengthOf",
+        "LengthOf",
+        "LessThan",
+        "LessThanBottom",
+        "LessThanUnknown",
+        "LowerBoundBottom",
+        "LowerBoundUnknown",
+        "NegativeIndexFor",
+        "NonNegative",
+        "PolyIndex",
+        "PolyLength",
+        "PolyLowerBound",
+        "PolySameLen",
+        "PolyUpperBound",
+        "Positive",
+        "SameLen",
+        "SameLenBottom",
+        "SameLenUnknown",
+        "SearchIndexBottom",
+        "SearchIndexFor",
+        "SearchIndexUnknown",
+        "SubstringIndexBottom",
+        "SubstringIndexFor",
+        "SubstringIndexUnknown",
+        "UpperBoundBottom",
+        "UpperBoundUnknown",
+        "ArrayLen",
+        "ArrayLenRange",
+        "BoolVal",
+        "BottomVal",
+        "DoubleVal",
+        "EnsuresMinLenIf",
+        "IntRange",
+        "IntRangeFromGTENegativeOne",
+        "IntRangeFromNonNegative",
+        "IntRangeFromPositive",
+        "IntVal",
+        "MinLen",
+        "MinLenFieldInvariant",
+        "PolyValue",
+        "StaticallyExecutable",
+        "StringVal",
+        "UnknownVal"
+    };
+
+    final Map<Name, Integer> annotationCount = new HashMap<>();
+    final Map<String, Integer> simpleNameCount = new HashMap<>();
 
     @Override
     protected boolean shouldAddShutdownHook() {
@@ -79,6 +135,13 @@ public class AnnotationStatistics extends SourceChecker {
             }
             System.out.print(builder.toString());
         }
+        StringBuilder builder = new StringBuilder("Index Checker annotations: \n");
+        for (String simpleName : annotations) {
+            Integer count = simpleNameCount.get(simpleName);
+            count = count == null ? 0 : count;
+            builder.append(String.format("@%s: %d%n", simpleName, count));
+        }
+        System.out.print(builder.toString());
     }
 
     /** Increment the number of times annotation with name {@code annoName} has appeared. */
@@ -87,6 +150,18 @@ public class AnnotationStatistics extends SourceChecker {
             annotationCount.put(annoName, 1);
         } else {
             annotationCount.put(annoName, annotationCount.get(annoName) + 1);
+        }
+    }
+
+    /**
+     * Increment the number of times annotation with the simple name {@code simpleName} has
+     * appeared.
+     */
+    void incrementSimpleNameCount(String simpleName) {
+        if (!simpleNameCount.containsKey(simpleName)) {
+            simpleNameCount.put(simpleName, 1);
+        } else {
+            simpleNameCount.put(simpleName, simpleNameCount.get(simpleName) + 1);
         }
     }
 
@@ -114,6 +189,8 @@ public class AnnotationStatistics extends SourceChecker {
         public Void visitAnnotation(AnnotationTree tree, Void p) {
             Name annoName = ((JCAnnotation) tree).annotationType.type.tsym.getQualifiedName();
             incrementCount(annoName);
+            incrementSimpleNameCount(
+                    ((JCAnnotation) tree).annotationType.type.tsym.getSimpleName().toString());
             if (annotations) {
                 // An annotation is a body annotation if, while ascending the
                 // AST from the annotation to the root, we find a block
