@@ -139,7 +139,7 @@ public class AnnotationStatistics extends SourceChecker {
         for (String simpleName : annotations) {
             Integer count = simpleNameCount.get(simpleName);
             count = count == null ? 0 : count;
-            builder.append(String.format("@%s: %d%n", simpleName, count));
+            builder.append(String.format("@%s:\t %d%n", simpleName, count));
         }
         System.out.print(builder.toString());
     }
