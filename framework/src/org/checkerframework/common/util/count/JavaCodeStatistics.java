@@ -2,6 +2,7 @@ package org.checkerframework.common.util.count;
 
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ArrayAccessTree;
+import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
@@ -9,14 +10,19 @@ import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.ParameterizedTypeTree;
 import com.sun.source.tree.TypeCastTree;
+import com.sun.source.tree.VariableTree;
 import java.util.List;
 import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.type.TypeKind;
 import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.source.SourceVisitor;
 import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
@@ -47,6 +53,11 @@ public class JavaCodeStatistics extends SourceChecker {
      */
     int numberOfIndexWarningSuppressions = 0;
 
+    int arrayField = 0;
+    int finalField = 0;
+    int nonPrivateNonFinal = 0;
+    int arrayAssignment = 0;
+
     @Override
     protected boolean shouldAddShutdownHook() {
         return true;
@@ -59,6 +70,13 @@ public class JavaCodeStatistics extends SourceChecker {
         builder.append(String.format("Found %d generic type uses.\n", generics));
         builder.append(String.format("Found %d array accesses and creations.\n", arrayAccesses));
         builder.append(String.format("Found %d typecasts.\n", typecasts));
+        builder.append(String.format("Found %d array fields.\n", arrayField));
+        builder.append(String.format("Found %d final array fields.\n", finalField));
+        builder.append(
+                String.format(
+                        "Found %d non-private, non-final array fields.\n", nonPrivateNonFinal));
+        builder.append(String.format("Found %d array fields assignments.\n", arrayAssignment));
+
         builder.append(
                 String.format(
                         "Found %d warning suppression annotations for the Index Checker.\n",
@@ -153,6 +171,35 @@ public class JavaCodeStatistics extends SourceChecker {
         public Void visitTypeCast(TypeCastTree node, Void aVoid) {
             typecasts++;
             return super.visitTypeCast(node, aVoid);
+        }
+
+        @Override
+        public Void visitVariable(VariableTree node, Void aVoid) {
+            Element ele = TreeUtils.elementFromTree(node);
+            if (TreeUtils.typeOf(node).getKind() == TypeKind.ARRAY
+                    && ele.getKind() == ElementKind.FIELD) {
+                arrayField++;
+                if (ElementUtils.isEffectivelyFinal(ele)) {
+                    finalField++;
+                } else if (!((com.sun.tools.javac.code.Symbol) ele).isPrivate()) {
+                    nonPrivateNonFinal++;
+                }
+                if (node.getInitializer() != null) {
+                    arrayAssignment++;
+                }
+            }
+            return super.visitVariable(node, aVoid);
+        }
+
+        @Override
+        public Void visitAssignment(AssignmentTree node, Void aVoid) {
+            Element ele = TreeUtils.elementFromTree(node.getVariable());
+            if (TreeUtils.typeOf(node).getKind() == TypeKind.ARRAY
+                    && ele.getKind() == ElementKind.FIELD) {
+                arrayAssignment++;
+            }
+
+            return super.visitAssignment(node, aVoid);
         }
     }
 
