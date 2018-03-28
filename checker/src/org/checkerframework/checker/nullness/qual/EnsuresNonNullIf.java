@@ -10,7 +10,9 @@ import org.checkerframework.framework.qual.InheritedAnnotation;
 
 /**
  * Indicates that the given expressions are non-null, if the method returns the given result (either
- * true or false).
+ * true or false). Every prefix expression is also non-null; for example,
+ * {@code @EnsuresNonNullIf(expression="a.b.c", results=true)} implies that both {@code a.b} and
+ * {@code a.b.c} are non-null if the method returns {@code true}.
  *
  * <p>Here are ways this conditional postcondition annotation can be used:
  *
@@ -50,8 +52,9 @@ import org.checkerframework.framework.qual.InheritedAnnotation;
  *   public native @Pure boolean isArray();}</pre>
  *
  * <!-- Issue:  https://tinyurl.com/cfissue/1307 -->
- * You cannot write two {@code @EnsuresNonNullIf} annotations on a single method; to get the effect
- * of
+ *
+ * <p><b>Repeated annotations:</b> You cannot write two {@code @EnsuresNonNullIf} annotations on a
+ * single method; to get the effect of
  *
  * <pre><code>
  * &nbsp;   @EnsuresNonNullIf(expression="outputFile", result=true)

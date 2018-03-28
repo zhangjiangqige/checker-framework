@@ -9,7 +9,9 @@ import org.checkerframework.framework.qual.InheritedAnnotation;
 import org.checkerframework.framework.qual.PostconditionAnnotation;
 
 /**
- * Indicates that the value expressions are non-null, if the method terminates successfully.
+ * Indicates that the value expressions are non-null, if the method terminates successfully. Every
+ * prefix expression is also non-null; for example, {@code @EnsuresNonNull(expression="a.b.c")}
+ * implies that both {@code a.b} and {@code a.b.c} are non-null.
  *
  * <p>This postcondition annotation is useful for methods that initialize a field:
  *

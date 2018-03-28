@@ -9,7 +9,9 @@ import org.checkerframework.framework.qual.PreconditionAnnotation;
 
 /**
  * Indicates a method precondition: the method expects the specified expressions to be non-null when
- * the annotated method is invoked.
+ * the annotated method is invoked. Every prefix expression must also be non-null; for example,
+ * {@code @RequiresNonNull(expression="a.b.c")} implies that both {@code a.b} and {@code a.b.c} must
+ * be non-null.
  *
  * <p>For example:
  * <!-- The "&nbsp;" is to hide the at-signs from Javadoc. -->
