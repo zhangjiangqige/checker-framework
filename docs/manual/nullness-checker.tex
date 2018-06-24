@@ -527,7 +527,7 @@ Section~\ref{null-defaults}) your code uses.  You only need one of these tools.
   If your code uses the Nullable default, use one of these tools:
 \begin{itemize}
 \item
-  \href{https://www.juliasoft.com/eng}{Julia analyzer},
+  \href{https://juliasoft.com/solutions/}{Julia analyzer},
 \item
   \href{http://nit.gforge.inria.fr}{Nit: Nullability Inference Tool},
 \item
@@ -623,7 +623,7 @@ code:
   A potential disadvantage of using the \<castNonNull> method is that your
   code becomes dependent on the Checker Framework at run time as well as at
   compile time:  you need to include \<checker-qual.jar>
-  or \<checker.jar> on your classpath at run time.
+  on your classpath at run time.
   If this is a problem, you can copy the implementation of
   \<castNonNull> into your own code, and possibly renaming it if you do not
   like the name.  Be sure to retain the documentation that indicates that
@@ -749,9 +749,9 @@ corresponding annotation:
   argument type):
   change the argument type to \<@Nullable Object>; for \<remove>, also change
   the return type to \<@Nullable Object>.
-% Emacs code for the argument types:
-% ;;NOT: (tags-query-replace " apply(Object " " apply(/*@Nullable*/ Object ")
-% (tags-query-replace " \\(get\\|equals\\|remove\\|contains\\|containsValue\\|containsKey\\|indexOf\\|lastIndexOf\\)(Object " " \\1(/*@Nullable*/ Object ")
+% Emacs code that adds annotations to the argument types:
+% ;;NOT: (tags-query-replace " apply(Object " " apply(@Nullable Object ")
+% (tags-query-replace " \\(get\\|equals\\|remove\\|contains\\|containsValue\\|containsKey\\|indexOf\\|lastIndexOf\\)(Object " " \\1(@Nullable Object ")
 
 \end{itemize}
 
@@ -1063,30 +1063,44 @@ tool like the Checker Framework.)
 Many null pointer exceptions occur because the programmer forgets to check
 whether a reference is null before dereferencing it.  Java 8's
 \sunjavadoc{java/util/Optional.html}{\code{Optional<T>}}
-class provides a partial solution:  you cannot
-dereference the contained value without calling the \<get> method.
+class provides a partial solution:  a programmer must call the \<get> method to
+access the value, and the designers of \<Optional> hope that the syntactic
+occurrence of the \<get> method will remind programmers to first check that
+the value is prosent.  This is still easy to forget, however.
 
-However, the use of \code{Optional} for this purpose is unsatisfactory.
-First, it adds syntactic complexity, making your code longer and harder to
-read.  (The \code{Optional} class provides some operations, such as \<map>
-and \<orElse>, that you would otherwise have to write; without these its
-code bloat would be even worse.)  Second, there is no guarantee that the
-programmer remembers to call \<isPresent> before calling \<get>.  Thus, use
-of \code{Optional} doesn't solve the underlying problem --- it merely
-converts a \code{NullPointerException} into a
-\code{NoSuchElementException} exception, and in either case your code
-crashes.
+The Checker Framework contains an Optional Checker (see
+Chapter~\ref{optional-checker}) that guarantees that programmers use
+\<Optional> correctly, such as calling \<isPresent> before calling \<get>.
 
-The Nullness Checker does not suffer these limitations.  It works with
-existing code and types, it ensures that you check for null wherever
-necessary, and it infers when the check for null is not necessary based on
-previous statements in the method.
-
-See the article
+There are some limitations to the utility of \code{Optional}, which might
+lead to you choose to use regular Java references rather than \<Optional>.
+(For more details, see the article
 \href{http://homes.cs.washington.edu/~mernst/advice/nothing-is-better-than-optional.html}{``Nothing
-  is better than Java's \<Optional> class''} for more details and
-explanation of the
-\href{http://homes.cs.washington.edu/~mernst/advice/nothing-is-better-than-optional.html#benefits-of-nullable}{benefits of \<@Nullable> over \<Optional>}.
+  is better than Java's \<Optional> class''}.)
+
+\begin{itemize}
+\item
+  It is still possible to call \<get> on a non-present \<Optional>, leading
+  to a \code{NoSuchElementException}.  In other words, \code{Optional}
+  doesn't solve the underlying problem --- it merely converts a
+  \code{NullPointerException} into a \code{NoSuchElementException}
+  exception, and in either case your code crashes.
+\item
+  \code{NullPointerException} is still possible in code that uses \code{Optional}.
+\item
+  \code{Optional} adds syntactic complexity, making your code longer and harder to
+  read.
+\item
+  \code{Optional} adds time and space overhead.
+\item
+  \code{Optional} does not address important sources of null pointer
+  exceptions, such as partially-initialized objects and calls to \<Map.get>.
+\end{itemize}
+
+The Nullness Checker does not suffer these limitations.  Furthermore, it
+works with existing code and types, it ensures that you check for null
+wherever necessary, and it infers when the check for null is not necessary
+based on previous statements in the method.
 
 Java's \<Optional> class provides utility routines to reduce clutter when
 using \<Optional>.  The Nullness Checker provides an
@@ -1201,12 +1215,6 @@ helper routine that is called by constructor.  For example:
 
 
   }
-\end{Verbatim}
-
-For compatibility with Java 5/6/7, you can write the receiver
-parameter in comments (see Section~\ref{receivers-and-imports-in-comments}):
-\begin{Verbatim}
-    private void init_other_fields(/*>>>@UnderInitialization(Object.class) MyClass this*/) {
 \end{Verbatim}
 
 % Most readers can
@@ -1830,15 +1838,6 @@ class MyClass {
 \end{Verbatim}
 
 \noindent
-If you are using annotations in comments, you would write:
-
-\begin{Verbatim}
-class MyClass {
-  void initHelper(/*>>>@UnknownInitialization MyClass this,*/ String param1) { ... }
-}
-\end{Verbatim}
-
-\noindent
 You are likely to want to annotate \<initHelper()> with
 \refqualclass{checker/nullness/qual}{EnsuresNonNull} as well; see
 Section~\ref{nullness-method-annotations}.
@@ -2036,12 +2035,6 @@ is called by constructor.  For example:
       field3 = new Object();
     }
   }
-\end{Verbatim}
-
-For compatibility with Java 5/6/7, you can write the receiver
-parameter in comments (see Section~\ref{receivers-and-imports-in-comments}):
-\begin{Verbatim}
-    private void init_other_fields(/*>>> @Raw MyClass this*/) {
 \end{Verbatim}
 
 % Most readers can
