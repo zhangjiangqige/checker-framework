@@ -1,5 +1,6 @@
 package org.checkerframework.checker.interning;
 
+import com.sun.source.tree.ArrayAccessTree;
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.Tree;
@@ -11,6 +12,7 @@ import org.checkerframework.checker.interning.qual.PolyInterned;
 import org.checkerframework.checker.interning.qual.UnknownInterned;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
+import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.framework.qual.DefaultQualifier;
 import org.checkerframework.framework.qual.ImplicitFor;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
@@ -120,6 +122,17 @@ public class InterningAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         public Void visitCompoundAssignment(CompoundAssignmentTree node, AnnotatedTypeMirror type) {
             type.replaceAnnotation(TOP);
             return super.visitCompoundAssignment(node, type);
+        }
+
+        // Does nothing.  Added only as a test case for #2181
+        @Override
+        public Void visitArrayAccess(
+                ArrayAccessTree node, AnnotatedTypeMirror annotatedTypeMirror) {
+            System.out.printf("visitArrayAccess(%s, %s)%n", node, annotatedTypeMirror);
+            System.out.printf("getNodesForTree => %s%n", getNodesForTree(node));
+            for (Node arrNode : getNodesForTree(node)) {}
+
+            return super.visitArrayAccess(node, annotatedTypeMirror);
         }
     }
 
