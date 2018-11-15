@@ -28,7 +28,6 @@ import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
-import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
@@ -152,9 +151,8 @@ class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
         }
 
         if (node.getIdentifier().contentEquals("this")) {
-            // TODO: why don't we use getSelfType here?
-            return f.getEnclosingType(
-                    (TypeElement) TreeUtils.elementFromTree(node.getExpression()), node);
+            AnnotatedDeclaredType res = f.getSelfType(node.getExpression());
+            return res;
         } else {
             // node must be a field access, so get the type of the expression, and then call
             // asMemberOf.
