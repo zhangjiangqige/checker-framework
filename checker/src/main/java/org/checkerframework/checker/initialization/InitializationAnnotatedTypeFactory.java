@@ -423,7 +423,11 @@ public abstract class InitializationAnnotatedTypeFactory<
 
     @Override
     public AnnotatedDeclaredType getSelfType(Tree tree) {
+        System.out.printf("getSelfType(%s)%n", tree);
+
         AnnotatedDeclaredType selfType = super.getSelfType(tree);
+
+        System.out.printf("  selfType = %s%n", selfType);
 
         TreePath path = getPath(tree);
         Tree topLevelMember = findTopLevelClassMemberForTree(path);
@@ -434,6 +438,8 @@ public abstract class InitializationAnnotatedTypeFactory<
                 setSelfTypeInInitializationCode(tree, selfType, path);
             }
         }
+
+        System.out.printf("getSelfType(%s) => %n", tree, selfType);
 
         return selfType;
     }
@@ -464,6 +470,9 @@ public abstract class InitializationAnnotatedTypeFactory<
 
     protected void setSelfTypeInInitializationCode(
             Tree tree, AnnotatedDeclaredType selfType, TreePath path) {
+
+        System.out.printf("setSelfTypeInInitializationCode(%s, %s, %s)%n", tree, selfType, path);
+
         ClassTree enclosingClass = TreeUtils.enclosingClass(path);
         Type classType = ((JCTree) enclosingClass).type;
         AnnotationMirror annotation = null;
@@ -488,9 +497,12 @@ public abstract class InitializationAnnotatedTypeFactory<
             }
         }
 
+        System.out.printf("  annotation = %s%n", annotation);
+
         if (annotation == null) {
             annotation = getFreeOrRawAnnotationOfSuperType(classType);
         }
+        System.out.printf("  final annotation = %s%n", annotation);
         selfType.replaceAnnotation(annotation);
     }
 
