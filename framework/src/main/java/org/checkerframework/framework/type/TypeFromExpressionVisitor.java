@@ -151,7 +151,10 @@ class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
         }
 
         if (node.getIdentifier().contentEquals("this")) {
-            AnnotatedDeclaredType res = f.getSelfType(node.getExpression());
+            // TODO: Both of these don't work.
+            // AnnotatedDeclaredType res = f.getSelfType(node.getExpression());
+            AnnotatedDeclaredType res = f.getSelfType(node);
+            System.out.printf("getSelfType => %n%s", res);
             return res;
         } else {
             // node must be a field access, so get the type of the expression, and then call
