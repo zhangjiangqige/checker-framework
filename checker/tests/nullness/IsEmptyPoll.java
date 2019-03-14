@@ -3,28 +3,46 @@
 
 // @skip-test until the issue is fixed
 
-import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.Queue;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
-public final class IsEmptyPoll extends ArrayList<String> {
+public final class IsEmptyPoll {
 
-    void mNonNull(Queue<String> q) {
+    void pollNonNull(Queue<String> q) {
         while (!q.isEmpty()) {
             @NonNull String firstNode = q.poll();
         }
     }
 
-    void mNullable(Queue<@Nullable String> q) {
+    void pollNullable(Queue<@Nullable String> q) {
         while (!q.isEmpty()) {
             // :: error: (assignment.type.incompatible)
             @NonNull String firstNode = q.poll();
         }
     }
 
-    void mNoCheck(Queue<@Nullable String> q) {
+    void pollNoCheck(Queue<@Nullable String> q) {
         // :: error: (assignment.type.incompatible)
         @NonNull String firstNode = q.poll();
+    }
+
+    void peekNonNull(LinkedList<String> q) {
+        while (!q.isEmpty()) {
+            @NonNull String firstNode = q.peek();
+        }
+    }
+
+    void peekNullable(LinkedList<@Nullable String> q) {
+        while (!q.isEmpty()) {
+            // :: error: (assignment.type.incompatible)
+            @NonNull String firstNode = q.peek();
+        }
+    }
+
+    void peekNoCheck(LinkedList<@Nullable String> q) {
+        // :: error: (assignment.type.incompatible)
+        @NonNull String firstNode = q.peek();
     }
 }

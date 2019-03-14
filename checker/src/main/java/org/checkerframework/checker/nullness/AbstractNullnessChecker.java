@@ -62,6 +62,7 @@ public abstract class AbstractNullnessChecker extends InitializationChecker {
         LinkedHashSet<Class<? extends BaseTypeChecker>> checkers =
                 super.getImmediateSubcheckerClasses();
         checkers.add(KeyForSubchecker.class);
+        checkers.add(NonEmptySubchecker.class);
         return checkers;
     }
 

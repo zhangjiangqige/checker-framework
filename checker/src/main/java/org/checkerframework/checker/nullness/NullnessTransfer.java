@@ -80,6 +80,9 @@ public class NullnessTransfer
     /** The type factory for the map key analysis. */
     protected final KeyForAnnotatedTypeFactory keyForTypeFactory;
 
+    /** The type factory for the empty-collection analysis. */
+    protected final NonEmptyAnnotatedTypeFactory nonEmptyTypeFactory;
+
     /** Create a new NullnessTransfer for the given analysis. */
     public NullnessTransfer(NullnessAnalysis analysis) {
         super(analysis);
@@ -88,6 +91,9 @@ public class NullnessTransfer
         this.keyForTypeFactory =
                 ((BaseTypeChecker) nullnessTypeFactory.getContext().getChecker())
                         .getTypeFactoryOfSubchecker(KeyForSubchecker.class);
+        this.nonEmptyTypeFactory =
+                ((BaseTypeChecker) analysis.getTypeFactory().getContext().getChecker())
+                        .getTypeFactoryOfSubchecker(NonEmptySubchecker.class);
         NONNULL = AnnotationBuilder.fromClass(elements, NonNull.class);
         NULLABLE = AnnotationBuilder.fromClass(elements, Nullable.class);
 
@@ -264,19 +270,35 @@ public class NullnessTransfer
 
             if (keyForTypeFactory.isKeyForMap(mapName, methodArgs.get(0))
                     && !hasNullableValueType((AnnotatedDeclaredType) receiverType)) {
-                makeNonNull(result, n);
+                refineToNonNull(result, n);
+            }
+        }
 
-                NullnessValue oldResultValue = result.getResultValue();
-                NullnessValue refinedResultValue =
-                        analysis.createSingleAnnotationValue(
-                                NONNULL, oldResultValue.getUnderlyingType());
-                NullnessValue newResultValue =
-                        refinedResultValue.mostSpecific(oldResultValue, null);
-                result.setResultValue(newResultValue);
+        // Refine result to @NonNull if n is an invocation of Queue.peek or Queues.poll, the
+        // argument is non-empty, and the map's value type is not @Nullable.
+        if (nonEmptyTypeFactory != null
+                && (nonEmptyTypeFactory.isQueuePeek(n) || nonEmptyTypeFactory.isQueuePoll(n))) {
+            AnnotatedTypeMirror receiverType = nullnessTypeFactory.getReceiverType(n.getTree());
+
+            if (methodArgs.get(0).hasAnnotation(nonEmptyTypeFactory.NONEMPTY)
+                    && !hasNullableValueType((AnnotatedDeclaredType) receiverType)) {
+                refineToNonNull(result, n);
             }
         }
 
         return result;
+    }
+
+    /** Refine the given result to @NonNull. */
+    void refineToNonNull(
+            TransferResult<NullnessValue, NullnessStore> result, MethodInvocationNode n) {
+        makeNonNull(result, n);
+
+        NullnessValue oldResultValue = result.getResultValue();
+        NullnessValue refinedResultValue =
+                analysis.createSingleAnnotationValue(NONNULL, oldResultValue.getUnderlyingType());
+        NullnessValue newResultValue = refinedResultValue.mostSpecific(oldResultValue, null);
+        result.setResultValue(newResultValue);
     }
 
     /**
