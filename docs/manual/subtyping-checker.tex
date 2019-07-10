@@ -136,8 +136,7 @@ Don't forget to compile these classes:
 $ javac myPackage/qual/Encrypted.java myPackage/qual/PossiblyUnencrypted.java
 \end{Verbatim}
 
-The resulting \<.class> files should either be on your classpath, or on the
-processor path (set via the \<-processorpath> command-line option to javac).
+The resulting \<.class> files should be on your classpath.
 
 \item
   Write \code{@Encrypted} annotations in your program (say, in file
@@ -180,7 +179,7 @@ capability of any realistic type system.
   You should add the \code{Encrypted} classfile to the processor classpath:
 
 \begin{alltt}
-  javac -processorpath \textit{myqualpath} -processor org.checkerframework.common.subtyping.SubtypingChecker \
+  javac -classpath \textit{myqualpath} -processor org.checkerframework.common.subtyping.SubtypingChecker \
         -Aquals=\textit{myPackage.qual.Encrypted},\textit{myPackage.qual.PossiblyUnencrypted} YourProgram.java
 
 YourProgram.java:42: incompatible types.

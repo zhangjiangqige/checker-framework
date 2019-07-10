@@ -69,6 +69,9 @@
               <source>1.8</source>
               <target>1.8</target>
               <showWarnings>true</showWarnings>
+	      <additionalClasspathElements>
+		<additionalClasspathElement>TODO:checker-qual.jar</additionalClasspathElement>
+	      </additionalClasspathElements>
               <annotationProcessorPaths>
                 <path>
                   <groupId>org.checkerframework</groupId>
