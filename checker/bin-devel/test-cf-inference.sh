@@ -8,9 +8,6 @@ export SHELLOPTS
 git -C /tmp/plume-scripts pull > /dev/null 2>&1 \
   || git -C /tmp clone --depth 1 -q https://github.com/plume-lib/plume-scripts.git
 
-SLUGOWNER=`/tmp/plume-scripts/git-organization typetools`
-echo SLUGOWNER=$SLUGOWNER
-
 export CHECKERFRAMEWORK=`readlink -f ${CHECKERFRAMEWORK:-.}`
 echo "CHECKERFRAMEWORK=$CHECKERFRAMEWORK"
 
@@ -22,10 +19,8 @@ source $SCRIPTDIR/build.sh ${BUILDJDK}
 ## own group because it is most likely to fail, and it's helpful to see
 ## that only it, not other downstream tests, failed.
 
-REPO=`/tmp/plume-scripts/git-find-fork ${SLUGOWNER} typetools checker-framework-inference`
-BRANCH=`/tmp/plume-scripts/git-find-branch ${REPO} ${TRAVIS_PULL_REQUEST_BRANCH:-$TRAVIS_BRANCH}`
-(cd .. && git clone -b ${BRANCH} -q --single-branch --depth 1 ${REPO}) || (cd .. && git clone -b ${BRANCH} --single-branch --depth 1 -q ${REPO})
+/tmp/plume-scripts/git-clone-related typetools checker-framework-inference
 
 export AFU=`readlink -f ${AFU:-../annotation-tools/annotation-file-utilities}`
 export PATH=$AFU/scripts:$PATH
-(cd ../checker-framework-inference && ./gradlew dist test --console=plain --warning-mode=all --no-daemon)
+(cd ../checker-framework-inference && ./.travis-build.sh)
