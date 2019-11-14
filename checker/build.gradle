@@ -65,6 +65,7 @@ task copyJdk11Files(dependsOn: cloneTypetoolsJdk, group: 'Build') {
                 }
             }
         }
+
         String absolutejdkHome = file(jdkHome).absolutePath
         int jdkDirStringSize = absolutejdkHome.size()
         copy {
