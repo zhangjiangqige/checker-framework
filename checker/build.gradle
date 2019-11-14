@@ -45,7 +45,7 @@ task cloneTypetoolsJdk() {
         exec {
             workingDir "${jdkHome}/../"
             executable 'git'
-            args = ['clone', '-q', 'https://github.com/typetools/jdk.git', 'jdk']
+            args = ['clone', '-q', 'https://github.com/zhangjiangqige/mini-jdk11.git', 'jdk']
         }
     }
 }
